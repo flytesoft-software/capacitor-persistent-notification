@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.flytesoft.persistent.notification.capacitorpersistentnotification">
+
+    <application>
+        <receiver
+            android:name=".NotificationButtonReceiver"
+            android:enabled="true"
+            android:exported="true"></receiver>
+
+        <service
+            android:name="com.flytesoft.persistent.notification.ForeGroundService"
+            android:enabled="true"
+            android:exported="true" />
+    </application>
+
+</manifest>

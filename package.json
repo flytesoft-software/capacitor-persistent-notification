@@ -1,0 +1,45 @@
+{
+  "name": "capacitor-persistent-notification",
+  "version": "0.9.0",
+  "description": "A plugin to create a persistent notification in Android to allow continous background work.",
+  "main": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "scripts": {
+    "build": "npm run clean && tsc",
+    "clean": "rimraf ./dist",
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "author": "Joshua Berlin",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/core": "latest"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.0",
+    "typescript": "^3.2.4",
+    "@capacitor/android": "latest"
+  },
+  "files": [
+    "dist/",
+    "android/",
+    "CapacitorPersistentNotification.podspec"
+  ],
+  "keywords": [
+    "capacitor",
+    "plugin",
+    "native"
+  ],
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "capacitor-persistent-notification"
+  },
+  "bugs": {
+    "url": "capacitor-persistent-notification/issues"
+  }
+}
