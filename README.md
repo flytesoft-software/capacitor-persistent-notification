@@ -47,6 +47,31 @@ import { Plugins } from '@capacitor/core';
 
 const { PersistentNotification } = Plugins;
 ```
+
+Be sure to add the plugin to your MainActivity in your Android project:
+```java
+import com.flytesoft.persistent.notification.PersistentNotification;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    // Initializes the Bridge
+    this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
+            // Additional plugins you've installed go here
+            // Ex: add(TotallyAwesomePlugin.class);
+            add(PersistentNotification.class);
+    }});
+  }
+}
+```
+
+Add the foreground service permission to the AndroidManifest.xml:
+```xml
+<!-- Permissions -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+```
 <a name="example"></a>
 ## Example Code
 
@@ -145,8 +170,8 @@ App.addListener('appStateChange', (state) => {
                 console.log("Trouble closing the persistent notification: ", e);
             });
 
-        // close the listener.
-        listener.close();
+        // remove the listener.
+        listener.remove();
     }
 });
 
