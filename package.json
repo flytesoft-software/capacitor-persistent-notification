@@ -4,13 +4,14 @@
   "description": "A plugin to create a persistent notification in Android to allow continous background work.",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
+  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "scripts": {
     "build": "npm run clean && tsc",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build"
   },
-  "author": "Joshua Berlin",
+  "author": "FlyteSoft",
   "license": "MIT",
   "dependencies": {
     "@capacitor/core": "latest"
@@ -37,9 +38,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "capacitor-persistent-notification"
+    "url": "https://github.com/flytesoft-software/capacitor-persistent-notification.git"
   },
   "bugs": {
-    "url": "capacitor-persistent-notification/issues"
+    "url": "https://github.com/flytesoft-software/capacitor-persistent-notification/issues"
   }
 }
