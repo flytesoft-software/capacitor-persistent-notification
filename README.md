@@ -9,7 +9,7 @@
 
  Unfortunately, because of system limitations, this plugin *ONLY* works on Android! The plugin calls are NO-OP on the web platform, and non-existent in iOS and Electron.  Further research may allow a persistent background service in Electron.  iOS does not have a system that allows a persistent background service.
 
- ## Installation
+## Installation
 
 Ensure Android is added to your Capacitor based project:
 
@@ -52,26 +52,29 @@ It is recommended, although not required, to open your notification upon your ap
 const { PersistentNotification, App, BackgroundTask } = Plugins;
 ...
 
-// Listen for user clicks on the notification.  OK to listen before opening.
-PersistentNotification.addListener('notificationclick', ({ action }) => {
-    console.log("Persistent notification click: ", action);
-    if(!action) // A button was NOT clicked.
-    {
-        // Put the app in the foreground 
-        // and close the notification, if desired.
-        PersistentNotification.appToForeground();
-        PersistentNotification.close();
-    }
-    else // A button was clicked by the user.
-    {
-        if(action === 'button-click2')
-        {
-            console.log("Button 2 was clicked!");
-        }
-    }
-});
+let listener = null;
 
 App.addListener('appStateChange', (state) => {
+    // Listen for user clicks on the notification.  
+    // OK to listen before opening.
+    listener = constPersistentNotification.addListener('notificationclick', ({ action } => {
+        console.log("Persistent notification click: ", action);
+        if(!action) // A button was NOT clicked.
+        {
+            // Put the app in the foreground 
+            // and close the notification, if desired.
+            PersistentNotification.appToForeground();
+            PersistentNotification.close();
+        }
+        else // A button was clicked by the user.
+        {
+            if(action === 'button-click2')
+            {
+                console.log("Button 2 was clicked!");
+            }
+        }
+    });
+
     if (!state.isActive) // App has gone inactive or closed
     {
         // Get some work done before the app closes completely.
@@ -137,6 +140,9 @@ App.addListener('appStateChange', (state) => {
             catch(e => {
                 console.log("Trouble closing the persistent notification: ", e);
             });
+
+        // close the listener.
+        listener.close();
     }
 });
 
@@ -256,9 +262,15 @@ Object containing the state information of the notification
 | --- | --- | --- |
 | [isOpen] | <code>boolean</code> | Whether the notification is open or not. |
 ---
+
 ## Changelog
+**0.9.1**  
+- Readme fixes.
+- Distribution file fixes.
+
+
 **0.9.0**  
 - Initial commit.
 
- ## License
+## License
 [MIT](https://choosealicense.com/licenses/mit/)
