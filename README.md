@@ -198,7 +198,7 @@ A method to open and configure your persistent notification. Returns success upo
 | [options.body] | <code>string</code> | Set the content or body area of the notification. |
 | [options.color] | <code>string</code> | Set the highlight color of the notification.  [Hex code or color names only](https://developer.android.com/reference/android/graphics/Color#parseColor(java.lang.String)).  If undefined or invalid, defaults to blue. |
 | [options.actions] |  <code>Array.&lt;[NotificationAction](#notification-action)&gt;</code> | An array of one or more buttons to be included. |
-| [options.icon] | <code>string</code> | Location of the icon to be displayed in status bar for the notification. Must use a relative path to icon resource from your top level directory.  If undefined or invalid, a default icon is provided. |
+| [options.icon] | <code>string</code> | Location of the icon to be displayed in the status bar for the notification. Must use a relative path to icon resource from your top level directory.  If undefined or invalid, a default icon is provided. |
 | [options.badge] | <code>string</code> | Location of a large (badge type) icon to be displayed in the notification.  Must use a relative path to the resource from your top level directory.  If undefined or invalid, no badge is displayed. |
 ---
 
@@ -278,7 +278,7 @@ Object containing the options for a button to be displayed in the notification, 
 | --- | --- | --- |
 | [title] | <code>string</code> | The title of the button (required). |
 | [action] | <code>string</code> | The action data of the button, will be returned upon ['notificationclick'](#notificationclick) event. If undefined, the title will be used. |
-
+| [icon] | <code>string</code> | Location of the icon to be displayed in the button.  Must use a relative path to icon resource from your top level directory.  If undefined or invalid, a default icon is provided. The icon is **NOT** displayed in Android 9.0+.|
 ---
 <a name="state"></a>
 ### state <code>object</code>
