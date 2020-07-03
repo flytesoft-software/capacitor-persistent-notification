@@ -151,7 +151,7 @@ The API is similar to the the standard ES6+ [Notification API](https://developer
 ### PersistentNotification.open([options]) ⇒ <code>Promise</code>  
 A method to open and configure your persistent notification. Returns success upon notification opening.  Configuration options are only optional if you have previously called the [update](#update) method.
 
-**Kind**: instance method of [<code>PersistentNotification</code>](#api)  
+**Kind**: Static instance method of [<code>PersistentNotification</code>](#api)  
 **Category**: async  
 **Fulfil**: <code>undefined</code>  
 **Throws**: <code>Error</code>  
@@ -171,7 +171,7 @@ A method to open and configure your persistent notification. Returns success upo
 ### PersistentNotification.update([options]) ⇒ <code>Promise</code>
 A method to configure and/or update a current notification.  If a notification is not already open your configuration will be maintained until [open](#open) is called.  See open for [parameters](#parameters).  
 
-**Kind**: instance method of [<code>PersistentNotification</code>](#api)  
+**Kind**: Static instance method of [<code>PersistentNotification</code>](#api)  
 **Category**: async  
 **Fulfil**: <code>undefined</code>  
 **Throws**: <code>Error</code>  
@@ -182,7 +182,7 @@ A method to configure and/or update a current notification.  If a notification i
 ### PersistentNotification.close(void) ⇒ <code>Promise</code>
 Closes the notification.  If the notification is not open, the method is NO-OP and returns success.  If unable to close the notification an error is thrown.
 
-**Kind**: instance method of [<code>PersistentNotification</code>](#api)  
+**Kind**: Static instance method of [<code>PersistentNotification</code>](#api)  
 **Category**: async  
 **Fulfil**: <code>undefined</code>  
 **Throws**: <code>Error</code>
@@ -192,7 +192,7 @@ Closes the notification.  If the notification is not open, the method is NO-OP a
 ### PersistentNotification.appToForeground(void) ⇒ <code>Promise</code>
 Brings the main application view or webview into the foreground.  If the app is already in the foreground the method is NO-OP.  Useful to call when the user has clicked on the notification.
 
-**Kind**: instance method of [<code>PersistentNotification</code>](#api)  
+**Kind**: Static instance method of [<code>PersistentNotification</code>](#api)  
 **Category**: async  
 **Fulfil**: <code>undefined</code>
 
@@ -202,7 +202,7 @@ Brings the main application view or webview into the foreground.  If the app is 
 ### PersistentNotification.getState(void) ⇒ <code>Promise</code>
 A promise that returns whether the notification is currently open.
 
-**Kind**: instance method of [<code>PersistentNotification</code>](#api)  
+**Kind**: Static instance method of [<code>PersistentNotification</code>](#api)  
 **Category**: async  
 **Fulfil**: <code>[state](#state)</code>
 
@@ -210,7 +210,7 @@ A promise that returns whether the notification is currently open.
 
 <a name="listener"></a>
 ### PersistentNotification.addListener(eventName: 'notificationclick', listenerFunc: (data: action) => void) : <code>[ListenerHandle](#handle)</code>
-**Kind**: instance method of [<code>PersistentNotification</code>](#api)  
+**Kind**: Static instance method of [<code>PersistentNotification</code>](#api)  
 **Category**: EventListener  
 **Returns**: <code>[ListenerHandle](#handle)</code>
 
