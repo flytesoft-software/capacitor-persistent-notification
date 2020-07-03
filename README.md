@@ -293,6 +293,10 @@ Object containing the state information of the notification
 ---
 
 ## Changelog
+
+**0.9.2**  
+- Readme fixes.
+
 **0.9.1**  
 - Readme fixes.
 - Distribution file fixes.
