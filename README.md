@@ -139,7 +139,7 @@ App.addListener('appStateChange', (state) => {
     }
     else // App is now opening or resuming.
     {
-        // OK to close un-open notification.
+        // OK to close un-opened notification.
         PersistentNotification.close().
             catch(e => {
                 console.log("Trouble closing the persistent notification: ", e);
