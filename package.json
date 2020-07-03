@@ -4,7 +4,6 @@
   "description": "A plugin to create a persistent notification in Android to allow continous background work.",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "scripts": {
     "build": "npm run clean && tsc",
     "clean": "rimraf ./dist",
