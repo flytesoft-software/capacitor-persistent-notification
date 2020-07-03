@@ -9,6 +9,10 @@
 
  Unfortunately, because of system limitations, this plugin *ONLY* works on Android! The plugin calls are NO-OP on the web platform, and non-existent in iOS and Electron.  Further research may allow a persistent background service in Electron.  iOS does not have a system that allows a persistent background service.
 
+## NPM Repository
+
+[capacitor-persistent-notification](https://www.npmjs.com/package/capacitor-persistent-notification)
+
 ## Installation
 
 Ensure Android is added to your Capacitor based project:
