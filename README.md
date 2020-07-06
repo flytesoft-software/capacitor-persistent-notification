@@ -1,13 +1,15 @@
 # Persistent Notification for Capacitor
- A Capacitor plugin that allows continuous background work by using a persistent notification in Android.
+ A Capacitor plugin that allows a continuous background service by using a persistent notification in Android.  Your background task/service is written in JavaScript, no need for platform specific code (except that required of enabling a Capacitor plugin.)
 
  Based upon, though not a fork of, the [Cordova Background Mode Plugin](https://github.com/katzer/cordova-plugin-background-mode).
 
- In order to allow an app written in HTML5/Javascript/CSS to continously run in the background using a [persistent foreground service notification in Android](https://developer.android.com/guide/components/services#Foreground).
+ In order to allow an app written in HTML5/Javascript/CSS to continuously run in the background using a [persistent foreground service notification in Android](https://developer.android.com/guide/components/services#Foreground).
 
  This plugin uses the new [Ionic/Capacitor plugin system](https://capacitorjs.com/docs/apis)
 
- Unfortunately, because of system limitations, this plugin *ONLY* works on Android! The plugin calls are NO-OP on the web platform, and non-existent in iOS and Electron.  Further research may allow a persistent background service in Electron.  iOS does not have a system that allows a persistent background service.
+ Unfortunately, because of system limitations, this plugin *ONLY* works on Android! The plugin calls are NO-OP on the web platform, and non-existent in iOS and Electron.  Further research may allow a persistent background service in Electron.  iOS does not have a system that allows a persistent background service. (I understand there are hacky methods to make it work in iOS, but until there is a proper API I plan no updates for iOS.)
+
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Examples](#example) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [API](#api) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Changelog](#changelog) |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Donate](#changelog)
 
 ## NPM Repository
 
@@ -24,7 +26,7 @@ npx cap add android
 Use NPM in your project directory to install the plugin.
 
 ```bash
-npm install capacitor-persistent-notification@latest --save-dev
+npm install capacitor-persistent-notification@latest --save
 npx cap update
 ```
 
@@ -58,11 +60,13 @@ public class MainActivity extends BridgeActivity {
     super.onCreate(savedInstanceState);
 
     // Initializes the Bridge
-    this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
+    this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {
+        {
             // Additional plugins you've installed go here
             // Ex: add(TotallyAwesomePlugin.class);
             add(PersistentNotification.class);
-    }});
+        }
+    });
   }
 }
 ```
@@ -70,7 +74,7 @@ public class MainActivity extends BridgeActivity {
 Add the foreground service permission to the AndroidManifest.xml:
 ```xml
 <!-- Permissions -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 ```
 <a name="example"></a>
 ## Example Code
@@ -171,7 +175,11 @@ App.addListener('appStateChange', (state) => {
             });
 
         // remove the listener.
-        listener.remove();
+        if(listener != null)
+        {
+            listener.remove();
+            listener = null;
+        }
     }
 });
 
@@ -194,8 +202,8 @@ A method to open and configure your persistent notification. Returns success upo
 | Param | Type | Description |
 | --- | --- | --- |
 | [options] | <code>object</code> | Similar to the [Notification API options.](https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification#Parameters:~:text=window.-,options) |
-| [options.title] | <code>string</code> | Set the title of the notification. (Required) |
-| [options.body] | <code>string</code> | Set the content or body area of the notification. |
+| [options.title] | <code>string</code> | Set the title of the notification. [Limited HTML may be used](https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML) (Required) |
+| [options.body] | <code>string</code> | Set the content or body area of the notification. [Limited HTML may be used](https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML) (Required)|
 | [options.color] | <code>string</code> | Set the highlight color of the notification.  [Hex code or color names only](https://developer.android.com/reference/android/graphics/Color#parseColor(java.lang.String)).  If undefined or invalid, defaults to blue. |
 | [options.actions] |  <code>Array.&lt;[NotificationAction](#notification-action)&gt;</code> | An array of one or more buttons to be included. |
 | [options.icon] | <code>string</code> | Location of the icon to be displayed in the status bar for the notification. Must use a relative path to icon resource from your top level directory.  If undefined or invalid, a default icon is provided. |
@@ -204,7 +212,7 @@ A method to open and configure your persistent notification. Returns success upo
 
 <a name="update"></a>
 ### PersistentNotification.update([options]) ⇒ <code>Promise</code>
-A method to configure and/or update a current notification.  If a notification is not already open your configuration will be maintained until [open](#open) is called.  See open for [parameters](#parameters).  
+A method to configure and/or update a current notification.  If a notification is not already open your configuration will be maintained until [open](#open) is called. Only update options you need to update. See open for [parameters](#parameters).  
 
 **Kind**: Static instance method of [<code>PersistentNotification</code>](#api)  
 **Category**: async  
@@ -233,7 +241,7 @@ Brings the main application view or webview into the foreground.  If the app is 
 
 ---
 
-<a name="getstate"></a>
+<a name="get-state"></a>
 ### PersistentNotification.getState(void) ⇒ <code>Promise</code>
 A promise that returns whether the notification is currently open.
 
@@ -293,6 +301,16 @@ Object containing the state information of the notification
 ---
 
 ## Changelog
+<a name="changelog"></a>
+
+**0.9.4**
+- Performance improvements.
+- Longer text may be used in the body.
+- Body and title of notification may use limited HTML markup.  
+- Readme fixes.
+
+**0.9.3**  
+- Readme fixes.
 
 **0.9.2**  
 - Readme fixes.
@@ -301,9 +319,12 @@ Object containing the state information of the notification
 - Readme fixes.
 - Distribution file fixes.
 
-
 **0.9.0**  
 - Initial commit.
+
+## Donation / Tips
+<a name="donate"></a>
+If you found this project useful and you would like to help buy me a cup of coffee, consider a [donation via Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=LCFZ7XATYTYLL&item_name=A+tip+for+open+source+development.&currency_code=USD&source=url). (<b>Not</b> tax deductible. Non-charitable.) This
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)

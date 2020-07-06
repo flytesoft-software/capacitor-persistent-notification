@@ -16,6 +16,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.text.Spanned;
 import android.util.Log;
 
 import com.flytesoft.persistent.notification.capacitorpersistentnotification.NotificationButtonReceiver;
@@ -52,6 +53,10 @@ public class ForeGroundService extends Service
     private String mIconLocation = "";
     private String mBigIconLocation = "";
     private JSArray mActions = new JSArray();
+    private Spanned mTitle = null;
+    private Spanned mContent = null;
+    private int mColor = Color.BLUE;
+    private Notification.BigTextStyle mTextStyle = null;
 
     private ArrayList<PendingIntent> mStoredButtonIntents = new ArrayList<PendingIntent>();
 
@@ -126,7 +131,7 @@ public class ForeGroundService extends Service
         }
     }
 
-    private void updateIcon(String iconLocation)
+    private Icon updateIcon(String iconLocation)
     {
         if(iconLocation != mIconLocation || mIcon == null) // Only update icon if icon location does not already exist or is different.
         {
@@ -134,19 +139,21 @@ public class ForeGroundService extends Service
 
             mIconLocation = iconLocation;
         }
+
+        return mIcon;
     }
 
-    private void updateBigIcon(String iconLocation)
+    private Icon updateBigIcon(String iconLocation)
     {
         if(iconLocation == null)
         {
             mBigIcon = null;
-            return;
+            return (Icon)null;
         }
         if(iconLocation.isEmpty())
         {
             mBigIcon = null;
-            return;
+            return (Icon)null;
         }
 
         if(iconLocation != mBigIconLocation ) // Only update icon if icon location does not already exist or is different.
@@ -155,9 +162,16 @@ public class ForeGroundService extends Service
 
             mBigIconLocation = iconLocation;
         }
+
+        return mBigIcon;
     }
 
     private Icon createIcon(String iconLocation)
+    {
+        return createIcon(iconLocation, false);
+    }
+
+    private Icon createIcon(String iconLocation, Boolean nullOK)
     {
         Icon newIcon = null;
 
@@ -177,7 +191,7 @@ public class ForeGroundService extends Service
                 Log.d("FOREGROUND", "Unable to create icon with provided asset, icon will default: " + e.toString());
             }
 
-            if(bMap == null)
+            if(bMap == null && !nullOK)
             {
                 newIcon = Icon.createWithResource(this, android.R.drawable.ic_menu_info_details);
             }
@@ -285,7 +299,7 @@ public class ForeGroundService extends Service
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                 Notification.Action.Builder actionBuild =
                         new Notification.Action.Builder(
-                                createIcon(iconLocation),
+                                createIcon(iconLocation, true),
                                 title,
                                 pendingIntent );
 
@@ -311,12 +325,13 @@ public class ForeGroundService extends Service
 
     private Notification createNotification()
     {
-        final String title = PersistentNotification.getTitle();
-        final String content = PersistentNotification.getContent();
+        final Spanned title = PersistentNotification.getTitle();
+        final Spanned content = PersistentNotification.getContent();
         final JSArray actions = PersistentNotification.getActions();
         final String color = PersistentNotification.getColor();
-
-        int rgbColor = Color.BLUE;
+        final Icon littleIcon =  updateIcon(PersistentNotification.getIcon());
+        final Icon bigIcon = updateBigIcon(PersistentNotification.getBadge());
+        int rgbColor = mColor;
 
         if(!color.isEmpty())
         {
@@ -327,8 +342,15 @@ public class ForeGroundService extends Service
             catch (Exception e)
             {
                 Log.d("FOREGROUND", "Unable to parse color string, defaulting.");
-
             }
+        }
+
+        if(mMainIntent == null)
+        {
+            Intent intent = new Intent(this, NotificationButtonReceiver.class);
+            intent.setAction(NOTIFICATION_CLICK_ACTION);
+
+            mAppIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         }
 
         if(mBuilder == null)
@@ -340,30 +362,77 @@ public class ForeGroundService extends Service
                 notificationChannel = NotificationChannel.DEFAULT_CHANNEL_ID;
             }
 
+            mTextStyle = new Notification.BigTextStyle()
+                    .bigText(content)
+                    .setBigContentTitle(title);
+
             mBuilder = new Notification.Builder(this, notificationChannel);
-        }
 
-        if(mMainIntent == null)
+            mBuilder.setContentTitle(title)
+                    .setContentText(content)
+                    .setSmallIcon(mIcon)
+                    .setContentIntent(mAppIntent)
+                    .setColor(rgbColor)
+                    .setLargeIcon(mBigIcon)
+                    .setStyle(mTextStyle)
+                    .setOngoing(true);
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                mBuilder.setSound(null, null);
+            }
+        }
+        else // Only update what needs to be updated since creation.
         {
-            Intent intent = new Intent(this, NotificationButtonReceiver.class);
-            intent.setAction(NOTIFICATION_CLICK_ACTION);
+            boolean updateStyle = false;
 
-            mAppIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            if(title != mTitle)
+            {
+                if(!title.equals(mTitle))
+                {
+                    updateStyle = true;
+                    mBuilder.setContentTitle(title);
+                    mTextStyle.setBigContentTitle(title);
+                }
+            }
+
+            if(content != mContent)
+            {
+                if(!content.equals(mContent))
+                {
+                    updateStyle = true;
+                    mBuilder.setContentText(content);
+                    mTextStyle.bigText(content);
+                }
+            }
+
+            if(rgbColor != mColor)
+            {
+                mBuilder.setColor(rgbColor);
+            }
+
+            if(littleIcon != mIcon)
+            {
+                mBuilder.setSmallIcon(mIcon);
+            }
+
+            if(bigIcon != mBigIcon)
+            {
+                mBuilder.setLargeIcon(bigIcon);
+            }
+
+            if(updateStyle)
+            {
+               mBuilder.setStyle( mTextStyle );
+            }
         }
 
-        updateIcon(PersistentNotification.getIcon());
+        setActions(mBuilder, actions); // Actions only updated upon initialization or change.
 
-        updateBigIcon(PersistentNotification.getBadge());
-
-        mBuilder.setContentTitle(title)
-                .setContentText(content)
-                .setSmallIcon(mIcon)
-                .setContentIntent(mAppIntent)
-                .setColor(rgbColor)
-                .setLargeIcon(mBigIcon)
-                .setSound(null, null);
-
-        setActions(mBuilder, actions);
+        mTitle = title;
+        mContent = content;
+        mIcon = littleIcon;
+        mBigIcon = bigIcon;
+        mColor = rgbColor;
 
         return mBuilder.build();
     }

@@ -9,6 +9,8 @@ import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -33,8 +35,10 @@ public class PersistentNotification extends Plugin
     private ForeGroundService mBoundService = null;
 
     private static String mTitle = "Foreground Notification";
+    private static Spanned mSpannedTitle = Html.fromHtml(mTitle, Html.FROM_HTML_MODE_COMPACT);
     private static String mIcon = "";
     private static String mContent = "Running code in the background";
+    private static Spanned mSpannedContent = Html.fromHtml(mContent, Html.FROM_HTML_MODE_COMPACT);
     private static JSArray mActions = null;
     private static String mColor = "";
     private static String mBadge = "";
@@ -103,7 +107,7 @@ public class PersistentNotification extends Plugin
     {
        importNotificationOptions(call);
 
-        if(mIsBound)
+        if(mIsBound && mBoundService != null)
         {
             mBoundService.updateNotification();
         }
@@ -185,12 +189,25 @@ public class PersistentNotification extends Plugin
 
     private void importNotificationOptions(PluginCall call)
     {
+        String oldTitle = mTitle;
+        String oldContent = mContent;
+
         mIcon = call.getString("icon", mIcon);
         mTitle = call.getString("title", mTitle);
         mContent = call.getString("body", mContent);
         mActions = call.getArray("actions", mActions);
         mColor = call.getString("color", mColor);
         mBadge = call.getString("badge", mBadge);
+
+        if(mTitle != oldTitle)
+        {
+            mSpannedTitle = Html.fromHtml(mTitle, Html.FROM_HTML_MODE_COMPACT);
+        }
+
+        if(mContent != oldContent)
+        {
+            mSpannedContent = Html.fromHtml(mContent, Html.FROM_HTML_MODE_COMPACT);
+        }
     }
 
     public void notifyActionClick(String action)
@@ -233,14 +250,14 @@ public class PersistentNotification extends Plugin
         }
     }
 
-    public static String getTitle()
+    public static Spanned getTitle()
     {
-        return mTitle;
+        return mSpannedTitle;
     }
 
     public static String getIcon() { return mIcon; }
 
-    public static String getContent() { return mContent; }
+    public static Spanned getContent() { return mSpannedContent; }
 
     public static JSArray getActions() { return mActions; }
 

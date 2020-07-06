@@ -1,7 +1,7 @@
 {
   "name": "capacitor-persistent-notification",
-  "version": "0.9.3",
-  "description": "A plugin to create a persistent notification in Android to allow continous background work.",
+  "version": "0.9.4",
+  "description": "A plugin to create a persistent notification in Android to allow a continuous background service/task written in Javascript.",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
   "scripts": {
@@ -26,6 +26,12 @@
     "CapacitorPersistentNotification.podspec"
   ],
   "keywords": [
+    "background",
+    "service",
+    "android",
+    "persistent",
+    "notification",
+    "javascript",
     "capacitor",
     "plugin",
     "native"
@@ -41,5 +47,6 @@
   },
   "bugs": {
     "url": "https://github.com/flytesoft-software/capacitor-persistent-notification/issues"
-  }
+  },
+  "homepage": "https://github.com/flytesoft-software/capacitor-persistent-notification"
 }
