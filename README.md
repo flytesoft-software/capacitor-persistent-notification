@@ -9,7 +9,7 @@
 
  Unfortunately, because of system limitations, this plugin *ONLY* works on Android! The plugin calls are NO-OP on the web platform, and non-existent in iOS and Electron.  Further research may allow a persistent background service in Electron.  iOS does not have a system that allows a persistent background service. (I understand there are hacky methods to make it work in iOS, but until there is a proper API I plan no updates for iOS.)
 
-### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Examples](#example) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [API](#api) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Changelog](#changelog) |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Donate](#changelog)
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Examples](#example) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [API](#api) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Changelog](#changelog) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Donate](#changelog)
 
 ## NPM Repository
 
