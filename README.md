@@ -324,7 +324,7 @@ Object containing the state information of the notification
 
 ## Donation / Tips
 <a name="donate"></a>
-If you found this project useful and you would like to help buy me a cup of coffee, consider a [donation via Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=LCFZ7XATYTYLL&item_name=A+tip+for+open+source+development.&currency_code=USD&source=url). (<b>Not</b> tax deductible. Non-charitable.) This
+If you found this project useful and you would like to help buy me a cup of coffee, consider a [donation via Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=LCFZ7XATYTYLL&item_name=A+tip+for+open+source+development.&currency_code=USD&source=url). (<b>Not</b> tax deductible. Non-charitable.) Either way, I am hoping you find this project useful.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
