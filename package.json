@@ -1,6 +1,6 @@
 {
   "name": "capacitor-persistent-notification",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "A plugin to create a persistent notification in Android to allow a continuous background service/task written in Javascript.",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",

@@ -1,11 +1,15 @@
 package com.flytesoft.persistent.notification;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.Application;
+import android.app.PendingIntent;
+import android.content.ComponentCallbacks;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -13,7 +17,6 @@ import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
 
 import com.flytesoft.persistent.notification.capacitorpersistentnotification.NotificationButtonReceiver;
 import com.getcapacitor.JSArray;
@@ -28,11 +31,15 @@ import static android.content.Context.BIND_AUTO_CREATE;
 @NativePlugin()
 public class PersistentNotification extends Plugin
 {
+    private static final String TAG = "FOREGROUND-NOTIFICATION";
     public static final String NOTIFICATION_ACTION_EVENT = "notificationclick";
 
+    private boolean mBoundCalled = false;
     private boolean mIsBound = false;
     private boolean mIsVisible = false;
     private ForeGroundService mBoundService = null;
+
+    private PluginCall mUpdateCall = null;
 
     private static String mTitle = "Foreground Notification";
     private static Spanned mSpannedTitle = Html.fromHtml(mTitle, Html.FROM_HTML_MODE_COMPACT);
@@ -45,7 +52,11 @@ public class PersistentNotification extends Plugin
 
     private boolean mIsStopping = false;
 
-    private ViewTreeObserver.OnGlobalLayoutListener mLayoutListener  = null;
+    private Application.ActivityLifecycleCallbacks activityLifecycleCallbacks = null;
+
+    private Thread.UncaughtExceptionHandler mExceptionHandler = null;
+    private ComponentCallbacks componentCallbacks = null;
+    private static Intent mLaunchIntent = null;
 
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -54,8 +65,9 @@ public class PersistentNotification extends Plugin
             // interact with the service.  Because we have bound to a explicit
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
+            mIsBound = true;
             mBoundService = ((ForeGroundService.LocalBinder)service).getService();
-
+            completeAwaitingCalls();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -66,7 +78,22 @@ public class PersistentNotification extends Plugin
             mIsBound = false;
             mBoundService = null;
         }
+
     };
+
+    public PersistentNotification()
+    {
+    }
+
+    private void completeAwaitingCalls()
+    {
+        if(mUpdateCall != null)
+        {
+            mBoundService.updateNotification();
+            mUpdateCall.success();
+            mUpdateCall = null;
+        }
+    }
 
     @Override
     public void load()
@@ -74,6 +101,7 @@ public class PersistentNotification extends Plugin
         super.load();
         registerLifeCycles();
         NotificationButtonReceiver.setNotificationRef(this);
+        mLaunchIntent = bridge.getActivity().getIntent();
     }
 
     @PluginMethod()
@@ -110,9 +138,12 @@ public class PersistentNotification extends Plugin
         if(mIsBound && mBoundService != null)
         {
             mBoundService.updateNotification();
+            call.success();
         }
-
-        call.success();
+        else
+        {
+            mUpdateCall = call;
+        }
     }
 
     @PluginMethod
@@ -127,64 +158,136 @@ public class PersistentNotification extends Plugin
     private void keepWebKitAlive()
     {
         bridge.getWebView().dispatchWindowVisibilityChanged(View.VISIBLE);
-        Log.d("FOREGROUND", "Visibility change implemented.");
+        Log.d(TAG, "Visibility change implemented.");
+    }
+
+
+    private void restartApp()
+    {
+        mLaunchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|
+                Intent.FLAG_ACTIVITY_SINGLE_TOP|
+                Intent.FLAG_ACTIVITY_NEW_TASK);
+
+         PendingIntent pendingAppIntent = PendingIntent.getActivity(bridge.getContext(), 0, mLaunchIntent, PendingIntent.FLAG_ONE_SHOT );
+
+         AlarmManager alarmManager = (AlarmManager) bridge.getActivity().getApplication().getSystemService(Context.ALARM_SERVICE);
+         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 1000, pendingAppIntent);
+         //System.exit(2);
     }
 
     private void registerLifeCycles()
     {
-        bridge.getActivity().getApplication().registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-            @Override
-            public void onActivityPostStopped(Activity activity) {
-                Log.d("FOREGROUND", "Post stopped.");
-                if(mIsBound)
-                {
-                    keepWebKitAlive();
-                }
-            }
-            @Override
-            public void onActivityCreated(Activity activity, Bundle bundle) {
+        if(mExceptionHandler == null)
+        {
+            mExceptionHandler = (thread, throwable) -> {
+                bridge.getActivity().finish();
+                Log.d(TAG, "Crashed.");
+                // restartApp(); TODO: Implement if solution is found.
+            };
 
-            }
+            Thread.setDefaultUncaughtExceptionHandler(mExceptionHandler);
+        }
 
-            @Override
-            public void onActivityStarted(Activity activity) {
-               Log.d("FOREGROUND", "Started.");
-               mIsVisible = true;
-            }
-
-            @Override
-            public void onActivityResumed(Activity activity) {
-                mIsVisible = true;
-            }
-
-            @Override
-            public void onActivityPaused(Activity activity) {
-                mIsVisible = false;
-            }
-
-            @Override
-            public void onActivityStopped(Activity activity) {
-                Log.d("FOREGROUND", "Stopped.");
-                mIsVisible = false;
-            }
-
-            @Override
-            public void onActivityPreStopped(Activity activity)
+        if(componentCallbacks == null)
+        {
+            componentCallbacks = new ComponentCallbacks()
             {
-                Log.d("FOREGROUND", "Pre-stopped.");
-                mIsStopping = true;
-            }
+                @Override
+                public void onConfigurationChanged(Configuration configuration)
+                {
 
-            @Override
-            public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
+                }
 
-            }
+                @Override
+                public void onLowMemory()
+                {
+                    Log.i(TAG, "Low memory");
+                }
+            };
 
-            @Override
-            public void onActivityDestroyed(Activity activity) {
-                mIsVisible = false;
-            }
-        });
+            bridge.getActivity().getApplication().registerComponentCallbacks(componentCallbacks);
+        }
+
+        if(activityLifecycleCallbacks == null)
+        {
+            activityLifecycleCallbacks = new Application.ActivityLifecycleCallbacks() {
+                @Override
+                public void onActivityPostStopped(Activity activity) {
+                    Log.i(TAG, "Post stopped.");
+                    if(mIsBound)
+                    {
+                        keepWebKitAlive();
+                    }
+                }
+                @Override
+                public void onActivityCreated(Activity activity, Bundle bundle) {
+                    Log.i(TAG, "Created");
+                }
+
+                @Override
+                public void onActivityPreDestroyed(Activity activity)
+                {
+                    Log.i(TAG, "Activity PRE-DESTROY");
+                }
+
+                @Override
+                public void onActivityStarted(Activity activity) {
+                    Log.i(TAG, "Started.");
+                    mIsVisible = true;
+                }
+
+                @Override
+                public void onActivityResumed(Activity activity) {
+                    mIsVisible = true;
+                    Log.i(TAG, "Resumed.");
+                }
+
+                @Override
+                public void onActivityPaused(Activity activity) {
+                    mIsVisible = false;
+                }
+
+                @Override
+                public void onActivityStopped(Activity activity) {
+                    Log.i(TAG, "Stopped.");
+                    mIsVisible = false;
+                }
+
+                @Override
+                public void onActivityPreStopped(Activity activity)
+                {
+                    Log.i(TAG, "Pre-stopped.");
+                    mIsStopping = true;
+                }
+
+                @Override
+                public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
+
+                }
+
+                @Override
+                public void onActivityDestroyed(Activity activity) {
+                    mIsVisible = false;
+                    Log.i(TAG, "Destroyed");
+
+                    if(componentCallbacks != null)
+                    {
+                        bridge.getActivity().getApplication().unregisterComponentCallbacks(componentCallbacks);
+                        componentCallbacks = null;
+                    }
+
+                    if(activityLifecycleCallbacks != null)
+                    {
+                        bridge.getActivity().getApplication().unregisterActivityLifecycleCallbacks(activityLifecycleCallbacks);
+                        activityLifecycleCallbacks = null;
+                    }
+                    stopService();
+                }
+            };
+
+            bridge.getActivity().getApplication().registerActivityLifecycleCallbacks(activityLifecycleCallbacks);
+        }
+
     }
 
     private void importNotificationOptions(PluginCall call)
@@ -235,6 +338,7 @@ public class PersistentNotification extends Plugin
 
         importNotificationOptions(call);
 
+
         if(startService())
         {
             if(mIsStopping)
@@ -267,14 +371,16 @@ public class PersistentNotification extends Plugin
 
     private boolean startService()
     {
-        if (!mIsBound)
+        if (!mIsBound && !mBoundCalled)
         {
             final Context context = getContext();
             Intent intent = new Intent(context, ForeGroundService.class);
 
             try
             {
-                context.bindService(intent, mConnection, BIND_AUTO_CREATE);
+                ForeGroundService.boundByApp();
+                Log.d(TAG, "Class: " + bridge.getActivity().getClass().getCanonicalName());
+                mBoundCalled = context.bindService(intent, mConnection, BIND_AUTO_CREATE);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 {
@@ -287,11 +393,10 @@ public class PersistentNotification extends Plugin
             }
             catch (Exception e)
             {
+                mBoundCalled = false;
                 mIsBound = false;
                 return false;
             }
-
-            mIsBound = true;
         }
 
         return true;
@@ -299,18 +404,16 @@ public class PersistentNotification extends Plugin
 
     private boolean stopService()
     {
-        if(mIsBound)
+        if(mIsBound || mBoundCalled)
         {
             final Context context = getContext();
             Intent intent = new Intent(context, ForeGroundService.class);
 
             context.unbindService(mConnection);
+            mBoundCalled = false;
+            mIsBound = false;
 
-            if(context.stopService(intent))
-            {
-                mIsBound = false;
-            }
-            else
+            if(!context.stopService(intent))
             {
                 return false;
             }

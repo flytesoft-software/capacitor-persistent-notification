@@ -38,8 +38,11 @@ public class ForeGroundService extends Service
     private Intent mMainIntent = null;
     private PendingIntent mAppIntent = null;
 
+    private static boolean mIsBound = false;
+
     private PowerManager.WakeLock wakeLock = null;
 
+    static private final String TAG = "FOREGROUND-SERVICE";
     static private final String NOTIFICATION_CHANNEL = "APP-FOREGROUND_NOTIFICATION-2";
     static private final String NOTIFICATION_NAME = "Persistent Notification";
     static private final String NOTIFICATION_DESCRIPTION = "Allows the app to run a continuous foreground service.";
@@ -59,6 +62,7 @@ public class ForeGroundService extends Service
     private Notification.BigTextStyle mTextStyle = null;
 
     private ArrayList<PendingIntent> mStoredButtonIntents = new ArrayList<PendingIntent>();
+
 
     public ForeGroundService()
     {
@@ -93,9 +97,18 @@ public class ForeGroundService extends Service
     public void onCreate()
     {
         super.onCreate();
+        Log.i("FOREGROUND", "Service created. Bound: " + mIsBound);
 
-        createChannel();
-        startForeground(ONGOING_NOTIFICATION_ID, createNotification());
+        if(mIsBound)
+        {
+            createChannel();
+            Notification note = createNotification();
+            startForeground(ONGOING_NOTIFICATION_ID, note);
+        }
+        else
+        {
+            // TODO: Handle service restart here.
+        }
     }
 
     /**
@@ -129,6 +142,11 @@ public class ForeGroundService extends Service
 
             mNM.createNotificationChannel(channel);
         }
+    }
+
+    public static void boundByApp()
+    {
+        mIsBound = true;
     }
 
     private Icon updateIcon(String iconLocation)
@@ -188,7 +206,8 @@ public class ForeGroundService extends Service
             }
             catch(IOException e)
             {
-                Log.d("FOREGROUND", "Unable to create icon with provided asset, icon will default: " + e.toString());
+                e.printStackTrace();
+                Log.d(TAG, "Unable to create icon with provided asset, icon will default: " + e.toString());
             }
 
             if(bMap == null && !nullOK)
@@ -341,7 +360,7 @@ public class ForeGroundService extends Service
             }
             catch (Exception e)
             {
-                Log.d("FOREGROUND", "Unable to parse color string, defaulting.");
+                Log.d(TAG, "Unable to parse color string, defaulting.");
             }
         }
 
@@ -367,6 +386,11 @@ public class ForeGroundService extends Service
                     .setBigContentTitle(title);
 
             mBuilder = new Notification.Builder(this, notificationChannel);
+
+            if(mIcon == null)
+            {
+                Log.d(TAG, "Little icon is null");
+            }
 
             mBuilder.setContentTitle(title)
                     .setContentText(content)
@@ -448,21 +472,62 @@ public class ForeGroundService extends Service
         return mBinder;
     }
 
+    private void restartApp()
+    {
+        Intent appIntent = new Intent(Intent.ACTION_VIEW);
+        appIntent.setClassName(getPackageName(), "com.flytesoft.missioncontrol.MainActivity");
+        appIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|
+        Intent.FLAG_ACTIVITY_SINGLE_TOP|
+        Intent.FLAG_ACTIVITY_NEW_TASK);
+        getApplicationContext().startActivity(appIntent);
+
+        Log.i(TAG, "Attempting app restart.");
+
+        /**
+        Intent appIntent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+        appIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+
+        PendingIntent pendingAppIntent = PendingIntent.getActivity(getApplicationContext(), 0, appIntent, PendingIntent.FLAG_ONE_SHOT );
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 1000, pendingAppIntent);
+        System.exit(2);
+         ***/
+        // getApplicationContext().startActivity(appIntent);
+
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        // The service is starting, due to a call to startService()
-        return Service.START_STICKY;
+        super.onStartCommand(intent, flags, startId);
+
+        if(intent == null)
+        {
+            Log.i(TAG, "Service restarted.");
+            // TODO: Handle restart here.
+        }
+        else
+        {
+            Log.i(TAG, "Service started: " + intent.toString());
+        }
+        return Service.START_NOT_STICKY; // TODO: Change back to sticky if able to find restart solution?
     }
 
     @Override
     public void onDestroy()
     {
         super.onDestroy();
+        mIsBound = false;
         killWakeLock();
         clearButtonIntents();
         stopForeground(true);
-        mNM.cancel(ONGOING_NOTIFICATION_ID);
-        Log.d("FOREGROUND", "Service destroyed.");
+        if(mNM != null)
+        {
+            mNM.cancel(ONGOING_NOTIFICATION_ID);
+        }
+        Log.i(TAG, "Service destroyed.");
+
     }
 }

@@ -10,6 +10,7 @@ import com.flytesoft.persistent.notification.PersistentNotification;
 
 public class NotificationButtonReceiver extends BroadcastReceiver
 {
+    static private final String TAG = "FOREGROUND-RECEIVER";
     static private PersistentNotification persistentNotification = null;
 
     public static void setNotificationRef(PersistentNotification pn)
@@ -22,7 +23,7 @@ public class NotificationButtonReceiver extends BroadcastReceiver
     {
         if(intent.getAction().startsWith(ForeGroundService.NOTIFICATION_BUTTON_ACTION))
         {
-            Log.d("FOREGROUND", "Notification action button clicked: " + intent.getStringExtra("action"));
+            Log.d(TAG, "Notification action button clicked: " + intent.getStringExtra("action"));
             if(persistentNotification != null)
             {
                 persistentNotification.notifyActionClick(intent.getStringExtra("action"));
@@ -30,8 +31,11 @@ public class NotificationButtonReceiver extends BroadcastReceiver
         }
         else if(intent.getAction().equals(ForeGroundService.NOTIFICATION_CLICK_ACTION))
         {
-            Log.d("FOREGROUND", "Notification general click.");
-            persistentNotification.notifyActionClick();
+            Log.d(TAG, "Notification general click.");
+            if(persistentNotification != null)
+            {
+                persistentNotification.notifyActionClick();
+            }
         }
     }
 }

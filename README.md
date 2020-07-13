@@ -9,6 +9,8 @@
 
  Unfortunately, because of system limitations, this plugin *ONLY* works on Android! The plugin calls are NO-OP on the web platform, and non-existent in iOS and Electron.  Further research may allow a persistent background service in Electron.  iOS does not have a system that allows a persistent background service. (I understand there are hacky methods to make it work in iOS, but until there is a proper API I plan no updates for iOS.)
 
+ *KNOWN ISSUE LIMITATION*: Unfortunately because the JavaScript code used to run a Capacitor app lives in an Android Activity, it is not currently possible to restart a service upon shutdown, crash, or reboot. See [Android limitation](https://developer.android.com/guide/components/activities/background-starts).  I am currently researching possible solutions.  For now try to keep memory consumption to a minimum while app is in "background" state.
+
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Examples](#example) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [API](#api) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Changelog](#changelog) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Donate](#changelog)
 
 ## NPM Repository
@@ -302,6 +304,10 @@ Object containing the state information of the notification
 
 ## Changelog
 <a name="changelog"></a>
+
+**0.9.5**
+- Kill some memory leaks.
+- Attempt to ready code to handle service crashes/restarts.
 
 **0.9.4**
 - Performance improvements.
